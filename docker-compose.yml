@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: line
+      POSTGRES_USER: line
+      POSTGRES_PASSWORD: line
+    volumes:
+      - line_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U line -d line"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://line:line@db:5432/line
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-before-deploy}
+      SHARE_SECRET: ${SHARE_SECRET:-local-dev-share-secret-change-before-deploy}
+      LAUNCH_DATE: "2026-05-17"
+      MAX_INACCURACIES: "0"
+      CORS_ORIGINS: http://localhost:3000,http://localhost:8080
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+
+volumes:
+  line_pgdata:

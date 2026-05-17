@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Линия">
+  <rect width="512" height="512" fill="#020202"/>
+  <path d="M128 96h256v48H128zM128 232h256v48H128zM128 368h256v48H128z" fill="#f4f4f4"/>
+  <path d="M232 96h48v320h-48z" fill="#777"/>
+</svg>

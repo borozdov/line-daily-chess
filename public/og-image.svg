@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Линия by Borozdov">
+  <rect width="1200" height="630" fill="#020202"/>
+  <path d="M0 70h1200M0 140h1200M0 210h1200M0 280h1200M0 350h1200M0 420h1200M0 490h1200M0 560h1200M100 0v630M200 0v630M300 0v630M400 0v630M500 0v630M600 0v630M700 0v630M800 0v630M900 0v630M1000 0v630M1100 0v630" stroke="#151515" stroke-width="1"/>
+  <text x="88" y="164" fill="#8d8d8d" font-family="Consolas, monospace" font-size="28" letter-spacing="2">DAILY CHESS PUZZLE</text>
+  <text x="84" y="312" fill="#f4f4f4" font-family="Arial, Helvetica, sans-serif" font-size="128" font-weight="700">ЛИНИЯ</text>
+  <text x="92" y="382" fill="#6ee7a8" font-family="Consolas, monospace" font-size="34" font-weight="700">BY BOROZDOV</text>
+  <g transform="translate(780 110)">
+    <rect width="280" height="280" fill="#d8d5c8"/>
+    <rect x="70" width="70" height="70" fill="#63705f"/>
+    <rect x="210" width="70" height="70" fill="#63705f"/>
+    <rect y="70" width="70" height="70" fill="#63705f"/>
+    <rect x="140" y="70" width="70" height="70" fill="#63705f"/>
+    <rect x="70" y="140" width="70" height="70" fill="#63705f"/>
+    <rect x="210" y="140" width="70" height="70" fill="#63705f"/>
+    <rect y="210" width="70" height="70" fill="#63705f"/>
+    <rect x="140" y="210" width="70" height="70" fill="#63705f"/>
+    <path d="M82 232h70v16H82zM92 204h50v28H92zM102 182h30v22h-30zM92 170h50v12H92z" fill="#050505"/>
+    <path d="M184 96c0-31 44-31 44 0 0 19-13 31-22 41-9-10-22-22-22-41zM178 147h56v16h-56z" fill="#f4f4f4"/>
+  </g>
+</svg>

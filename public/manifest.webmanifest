@@ -1,0 +1,19 @@
+{
+  "name": "Линия by Borozdov",
+  "short_name": "Линия",
+  "description": "Ежедневная шахматная задача онлайн от Borozdov: одна сложная тактическая головоломка в день, рейтинг, топ игроков и достижения.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#020202",
+  "theme_color": "#020202",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Линия by Borozdov",
+  "description": "Standalone PWA от Borozdov для ежедневной шахматной задачи онлайн: рейтинг, топ игроков, достижения и серверная валидация ходов.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
