@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://borozdov.ru/sitemap.xml
+Sitemap: https://daily-puzzle.borozdov.ru/sitemap.xml

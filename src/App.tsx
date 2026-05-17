@@ -40,7 +40,7 @@ const brandLinks = [
   { label: 'Telegram', href: 'https://t.me/Borozdov' },
 ];
 
-const SITE_URL = 'https://borozdov.ru';
+const SITE_URL = 'https://daily-puzzle.borozdov.ru';
 const DEFAULT_SEO_DESCRIPTION =
   'Линия by Borozdov - ежедневная шахматная задача онлайн: одна сложная тактическая головоломка в день, рейтинг, топ игроков и достижения.';
 
