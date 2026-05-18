@@ -34,6 +34,21 @@ type VerboseMove = {
   promotion?: string;
 };
 
+type BoardMove = {
+  from: Square;
+  to: Square;
+  promotion?: 'q' | 'r' | 'b' | 'n';
+};
+
+type LastMove = {
+  from: string;
+  to: string;
+  role: 'user' | 'system' | 'error';
+};
+
+const MOVE_ANIMATION_MS = 240;
+const MOVE_SETTLE_MS = MOVE_ANIMATION_MS + 80;
+
 const brandLinks = [
   { label: 'GitHub', href: 'https://github.com/borozdov' },
   { label: 'borozdov.ru', href: 'https://borozdov.ru' },
@@ -155,11 +170,26 @@ function toUci(source: string, target: string, piece: string) {
   return `${source}${target}${promotionRank && isPawn ? 'q' : ''}`;
 }
 
+function toBoardMove(uci: string): BoardMove {
+  const promotion = uci[4]?.toLowerCase() as BoardMove['promotion'];
+  return {
+    from: uci.slice(0, 2) as Square,
+    to: uci.slice(2, 4) as Square,
+    promotion,
+  };
+}
+
 function moveUciFromBoard(board: Chess, source: string, target: string) {
   const piece = board.get(source as Square);
   const promotionRank = target[1] === '1' || target[1] === '8';
   const promotion = piece?.type === 'p' && promotionRank ? 'q' : undefined;
   return `${source}${target}${promotion ?? ''}`;
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
 }
 
 function formatCountdown(expiresAt: string) {
@@ -262,6 +292,7 @@ export default function App() {
   const [countdown, setCountdown] = useState('00:00:00');
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
   const [legalTargets, setLegalTargets] = useState<string[]>([]);
+  const [lastMove, setLastMove] = useState<LastMove | null>(null);
   const [nicknameDraft, setNicknameDraft] = useState('');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
@@ -385,6 +416,10 @@ export default function App() {
   }, [daily?.fen, daily?.status]);
 
   useEffect(() => {
+    setLastMove(null);
+  }, [daily?.daily_id, daily?.date]);
+
+  useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') clearSelection();
     };
@@ -401,6 +436,28 @@ export default function App() {
   const squareStyles = useMemo<Record<string, CSSProperties>>(() => {
     const styles: Record<string, CSSProperties> = {};
     const probe = daily ? new Chess(daily.fen) : null;
+
+    if (lastMove) {
+      const tint =
+        lastMove.role === 'system'
+          ? 'rgba(120, 255, 184, 0.22)'
+          : lastMove.role === 'error'
+            ? 'rgba(255, 118, 118, 0.24)'
+            : 'rgba(255, 255, 255, 0.20)';
+
+      for (const square of [lastMove.from, lastMove.to]) {
+        const base = styles[square] ?? {};
+        styles[square] = {
+          ...base,
+          background: `linear-gradient(135deg, ${tint}, rgba(255, 255, 255, 0.03)), ${
+            typeof base.background === 'string' ? base.background : 'transparent'
+          }`,
+          boxShadow: ['inset 0 0 0 3px rgba(255, 255, 255, 0.28)', base.boxShadow]
+            .filter(Boolean)
+            .join(', '),
+        };
+      }
+    }
 
     if (selectedSquare) {
       styles[selectedSquare] = {
@@ -435,7 +492,7 @@ export default function App() {
     }
 
     return styles;
-  }, [daily, legalTargets, selectedSquare]);
+  }, [daily, lastMove, legalTargets, selectedSquare]);
 
   const selectSquare = (square: string) => {
     if (!daily || daily.status !== 'playing' || isSubmitting) return;
@@ -491,6 +548,24 @@ export default function App() {
     if (!daily) return;
     setIsSubmitting(true);
     setShareState('idle');
+    setLastMove(null);
+
+    const animationStartedAt = Date.now();
+    const optimisticBoard = new Chess(daily.fen);
+    let optimisticFen = daily.fen;
+    let optimisticMove: { from: string; to: string } | null = null;
+
+    try {
+      const move = optimisticBoard.move(toBoardMove(uci));
+      if (move) {
+        optimisticMove = move;
+        optimisticFen = optimisticBoard.fen();
+        setGame(new Chess(optimisticFen));
+        setLastMove({ from: move.from, to: move.to, role: 'user' });
+      }
+    } catch {
+      // Server-side validation remains authoritative.
+    }
 
     try {
       const response = await submitMove(uci);
@@ -503,6 +578,27 @@ export default function App() {
         lives_remaining: response.lives_remaining,
         locked_until: response.locked_until,
       };
+
+      if (optimisticMove) {
+        const elapsed = Date.now() - animationStartedAt;
+        await sleep(Math.max(0, MOVE_SETTLE_MS - elapsed));
+      }
+
+      if (response.system_move_uci) {
+        const replyBoard = new Chess(optimisticFen);
+        const systemMove = replyBoard.move(toBoardMove(response.system_move_uci));
+        if (systemMove) {
+          setGame(replyBoard);
+          setLastMove({ from: systemMove.from, to: systemMove.to, role: 'system' });
+          await sleep(MOVE_SETTLE_MS);
+        }
+      } else if (response.move_status === 'Inaccuracy') {
+        setGame(new Chess(response.fen));
+        await sleep(MOVE_SETTLE_MS);
+      } else if (response.move_status === 'Blunder' && optimisticMove) {
+        setLastMove({ from: optimisticMove.from, to: optimisticMove.to, role: 'error' });
+        await sleep(Math.floor(MOVE_ANIMATION_MS * 0.75));
+      }
 
       setDaily(updated);
       setGame(new Chess(response.fen));
@@ -535,6 +631,7 @@ export default function App() {
       setStats(userStats);
       setRank(userRank);
       setGame(new Chess(payload.fen));
+      setLastMove(null);
     } finally {
       setIsSubmitting(false);
     }
@@ -948,7 +1045,7 @@ export default function App() {
                       borderRadius: 0,
                       boxShadow: 'inset 0 0 0 1px rgba(0, 0, 0, 0.45)',
                     },
-                    animationDurationInMs: 90,
+                    animationDurationInMs: MOVE_ANIMATION_MS,
                     showAnimations: true,
                     showNotation: false,
                   }}
